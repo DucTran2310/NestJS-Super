@@ -1,2 +1,2 @@
-const name: string = "AdStar";
-console.log(name);
+const name: string = 'AdStar'
+console.log(name)
