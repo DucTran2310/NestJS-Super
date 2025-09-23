@@ -12,7 +12,8 @@
       "~/*": [
         "src/*"
       ] // Đường dẫn tương đối cho các import (alias)
-    }
+    },
+    "experimentalDecorators": true
   },
   "files": [
     "src/type.d.ts"
