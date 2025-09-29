@@ -45,6 +45,9 @@ NestJS CLI là công cụ dòng lệnh mạnh mẽ giúp bạn tạo, quản lý
 - Tạo service:  
   `nest g service <service-name>`
 
+- Tạo file ko có spec-test:
+  `nest g s prisma --flat --no-spec`
+
 ---
 
 ## Ví dụ: Tạo module, controller và service cho User
