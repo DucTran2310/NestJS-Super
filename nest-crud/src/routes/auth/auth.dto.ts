@@ -57,3 +57,10 @@ export class LoginResDTO {
     Object.assign(this, partial) // gán các thuộc tính từ partial vào instance hiện tại
   }
 }
+
+export class RefreshTokenBodyDTO {
+  @IsString()
+  refreshToken: string
+}
+
+export class RefreshTokenResDTO extends LoginResDTO {}

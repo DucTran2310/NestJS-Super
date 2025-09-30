@@ -93,4 +93,37 @@ export class AuthService {
 
     return { accessToken, refreshToken }
   }
+
+  async refreshToken(oldRefreshToken: string) {
+    try {
+      // 1. Verify token (xem có hợp lệ, đúng chữ ký, chưa hết hạn,...)
+      const { userId } = await this.tokenService.verifyRefreshToken(oldRefreshToken)
+
+      // 2. Kiểm tra token có trong DB không (nếu không có thì coi như không hợp lệ)
+      const storedToken = await this.prismaService.refreshToken.findUnique({
+        where: { token: oldRefreshToken },
+      })
+      if (!storedToken) {
+        throw new UnauthorizedException('Refresh token is not valid')
+      }
+
+      // 3. Xoa refreshToken cũ đi (vì refresh token chỉ dùng 1 lần)
+      await this.prismaService.refreshToken.delete({
+        where: { token: oldRefreshToken },
+      })
+
+      // 4. Tạo mới cặp accessToken & refreshToken
+      const tokens = await this.generateToken({ userId })
+
+      return tokens
+    } catch (error) {
+      // Trường hợp đã refreshToken rồi, tbao cho user biêt
+      // refresh của họ đã bị đánh cắp, hoặc họ đã đăng xuất khỏi tất cả các thiết bị
+      if (error instanceof Prisma.PrismaClientKnownRequestError || error.code === 'P2025') {
+        throw new UnauthorizedException('Refresh token has been revoked')
+      }
+
+      throw new UnauthorizedException('Refresh token is not valid')
+    }
+  }
 }
