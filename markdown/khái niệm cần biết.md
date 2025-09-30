@@ -1,32 +1,389 @@
-//DTO: Data Transfer Object là một mẫu thiết kế được sử dụng để truyền dữ liệu giữa các lớp hoặc các tầng trong một ứng dụng. DTO thường được sử dụng để đóng gói dữ liệu và truyền nó qua mạng hoặc giữa các phần khác nhau của ứng dụng mà không cần phải tiết lộ toàn bộ cấu trúc của đối tượng gốc.
-//Service: Trong kiến trúc phần mềm, một service (dịch vụ) là một thành phần hoặc module chịu trách nhiệm thực hiện một chức năng cụ thể hoặc cung cấp một tập hợp các chức năng liên quan. Services thường được sử dụng để tách biệt logic nghiệp vụ khỏi các thành phần khác của ứng dụng, giúp tăng tính tái sử dụng và dễ bảo trì.
-//Prisma: Prisma là một công cụ ORM (Object-Relational Mapping) mã nguồn mở giúp các nhà phát triển làm việc với cơ sở dữ liệu một cách dễ dàng và hiệu quả hơn. Nó cung cấp một cách tiếp cận hiện đại để tương tác với cơ sở dữ liệu, cho phép bạn viết mã TypeScript hoặc JavaScript để truy vấn và thao tác dữ liệu thay vì phải viết SQL thủ công.
-//Hashing Service: Hashing service là một dịch vụ chịu trách nhiệm chuyển đổi dữ liệu đầu vào (thường là mật khẩu) thành một chuỗi ký tự cố định có độ dài nhất định, gọi là hash. Quá trình này sử dụng các thuật toán băm (hashing algorithms) để đảm bảo rằng dữ liệu gốc không thể được khôi phục lại từ hash, giúp bảo vệ thông tin nhạy cảm như mật khẩu người dùng.
-//Prisma Client Known Request Error: Prisma Client Known Request Error là một loại lỗi đặc biệt được Prisma Client sử dụng để biểu thị các lỗi đã biết xảy ra trong quá trình thực hiện các thao tác với cơ sở dữ liệu. Những lỗi này thường liên quan đến các vấn đề như vi phạm ràng buộc dữ liệu, lỗi kết nối cơ sở dữ liệu, hoặc các lỗi khác mà Prisma có thể dự đoán và xử lý một cách cụ thể.
-//Ví dụ: Trong đoạn mã trên, khi cố gắng tạo một người dùng mới với email đã tồn tại trong cơ sở dữ liệu, Prisma sẽ ném ra một lỗi với mã 'P2002', biểu thị rằng có vi phạm ràng buộc duy nhất (unique constraint violation). Điều này cho phép nhà phát triển xử lý lỗi một cách cụ thể, chẳng hạn như trả về thông báo "Email already exists" thay vì để lỗi lan truyền không kiểm soát.
+# 🚀 NestJS Concepts & Implementation Guide
 
-import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common'
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
+## 📚 Core Concepts
+
+### 🎯 **DTO (Data Transfer Object)**
+
+```typescript
+// DTO là mẫu thiết kế để truyền dữ liệu giữa các lớp/tầng trong ứng dụng
+class CreateUserDto {
+  email: string;
+  password: string;
+  name: string;
+}
+```
+
+**Đặc điểm:**
+
+- ✅ Đóng gói dữ liệu
+- ✅ Truyền qua mạng
+- ✅ Ẩn cấu trúc đối tượng gốc
+- ✅ Tách biệt layers
+
+### 🔧 **Service**
+
+```typescript
+@Injectable()
+export class UserService {
+  constructor(private prisma: PrismaService) {}
+  
+  async createUser(dto: CreateUserDto) {
+    // Logic nghiệp vụ
+  }
+}
+```
+
+**Vai trò:**
+
+- 🎯 Thực hiện chức năng cụ thể
+- 🔄 Tách biệt logic nghiệp vụ
+- ♻️ Tăng tính tái sử dụng
+- 🛠️ Dễ bảo trì
+
+### 🗄️ **Prisma ORM**
+
+```typescript
+// Thay vì SQL thủ công
+const users = await prisma.user.findMany({
+  where: { active: true }
+});
+```
+
+**Lợi ích:**
+
+- ⚡ TypeScript/JavaScript native
+- 🔒 Type-safe database queries
+- 🎯 Modern database access
+- 📊 Auto-generated client
+
+### 🔐 **Hashing Service**
+
+```typescript
+@Injectable()
+export class HashingService {
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 12);
+  }
+  
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
+  }
+}
+```
+
+**Mục đích:**
+
+- 🛡️ Bảo vệ mật khẩu
+- 🔄 Chuyển đổi one-way
+- 📏 Chuỗi cố định độ dài
+- 🔒 Không thể khôi phục
+
+### ❌ **Prisma Client Known Request Error**
+
+```typescript
+try {
+  await prisma.user.create({ data: userData });
+} catch (error) {
+  if (error.code === 'P2002') {
+    throw new ConflictException('Email already exists');
+  }
+  throw error;
+}
+```
+
+**Common Error Codes:**
+
+- `P2002` - Unique constraint violation
+- `P2025` - Record not found
+- `P2003` - Foreign key constraint failed
+
+---
+
+## 🎯 Decorators & Annotations
+
+### 🏗️ **Constructor**
+
+```typescript
+export class UserController {
+  constructor(
+    private userService: UserService,
+    private hashingService: HashingService
+  ) {}
+}
+```
+
+### 📦 **@Body()**
+
+```typescript
+@Post('register')
+async register(@Body() createUserDto: CreateUserDto) {
+  return this.userService.create(createUserDto);
+}
+```
+
+### 📤 **@Post('register')**
+
+```typescript
+@Controller('auth')
+export class AuthController {
+  @Post('register')  // POST /auth/register
+  async register(@Body() dto: CreateUserDto) {
+    // Handle registration
+  }
+}
+```
+
+### 🔄 **@UseInterceptors(ClassSerializerInterceptor)**
+
+```typescript
+@Controller('users')
+@UseInterceptors(ClassSerializerInterceptor)
+export class UserController {
+  @Get()
+  async findAll(): Promise<UserDto[]> {
+    // Auto-serialized to JSON
+  }
+}
+```
+
+---
+
+## ⚙️ Validation & Transformation
+
+### 🎯 **ValidationPipe Configuration**
+
+```typescript
+const app = await NestFactory.create(AppModule);
+
+app.useGlobalPipes(
+  new ValidationPipe({
+    // 🎯 Cấu hình Validation
+    whitelist: true,           // 🗑️ Loại bỏ thuộc tính thừa
+    forbidNonWhitelisted: true, // ❌ Lỗi nếu có thuộc tính thừa
+    transform: true,           // 🔄 Chuyển đổi payload thành DTO instance
+    exceptionFactory: (errors) => {
+      // 🎨 Custom error response
+      return new UnprocessableEntityException(
+        errors.map(err => ({
+          field: err.property,
+          errors: Object.values(err.constraints).join(', ')
+        }))
+      );
+    }
+  })
+);
+```
+
+### 🚨 **UnprocessableEntityException**
+
+```typescript
+throw new UnprocessableEntityException({
+  message: 'Validation failed',
+  errors: [
+    { field: 'email', error: 'Invalid email format' },
+    { field: 'password', error: 'Password too weak' }
+  ]
+});
+```
+
+---
+
+## 🔄 Serialization
+
+### 🎯 **Chuyển đổi dữ liệu trước khi trả về client**
+
+```typescript
+// Entity -> DTO transformation
+@Entity()
+export class User {
+  id: number;
+  email: string;
+  password: string;  // ❌ Sẽ bị ẩn
+  createdAt: Date;
+}
+
+export class UserDto {
+  id: number;
+  email: string;
+  createdAt: Date;
+  // ✅ Chỉ trả về fields cần thiết
+}
+```
+
+### 🛠️ **Class Transformer Decorators**
+
+```typescript
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
+
+export class UserResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  email: string;
+
+  @Exclude()  // 🚫 Ẩn password khỏi response
+  password: string;
+
+  @Expose()
+  @Transform(({ value }) => value.toISOString()) // 🎨 Format date
+  createdAt: Date;
+
+  @Expose()
+  @Type(() => ProfileDto) // 🔄 Transform nested object
+  profile: ProfileDto;
+
+  @Expose()
+  get fullName(): string {  // 🎯 Computed property
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+```
+
+---
+
+## ✅ Validation Rules
+
+### 📋 **Class Validator Decorators**
+
+```typescript
+import {
+  IsString, IsEmail, IsNotEmpty, Length, 
+  Min, Max, Matches, IsOptional, ValidateNested,
+  IsArray, IsEnum, IsBoolean, IsUUID
+} from 'class-validator';
+
+export class CreateUserDto {
+  @IsNotEmpty({ message: 'Email là bắt buộc' })
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  email: string;
+
+  @IsString()
+  @Length(6, 20, { message: 'Mật khẩu phải từ 6-20 ký tự' })
+  @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+    message: 'Mật khẩu phải chứa chữ hoa, chữ thường và số'
+  })
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 50)
+  name?: string;
+
+  @IsEnum(UserRole)
+  role: UserRole;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => ProfileDto)
+  profiles: ProfileDto[];
+
+  @IsBoolean()
+  isActive: boolean;
+
+  @IsUUID()
+  companyId: string;
+
+  @IsNumber()
+  @Min(18)
+  @Max(100)
+  age: number;
+}
+```
+
+### 🎯 **Common Validators**
+
+| Decorator | Purpose | Example |
+|-----------|---------|---------|
+| `@IsString()` | Kiểm tra chuỗi | `name: string` |
+| `@IsEmail()` | Validate email | `email: string` |
+| `@IsNotEmpty()` | Không được rỗng | `password: string` |
+| `@Length(min, max)` | Độ dài chuỗi | `@Length(3, 50)` |
+| `@Min() / @Max()` | Giá trị số | `@Min(0) @Max(100)` |
+| `@Matches(regex)` | Regex pattern | `@Matches(/^[a-z]+$/)` |
+| `@IsOptional()` | Không bắt buộc | `optionalField?: string` |
+| `@IsEnum()` | Enum value | `@IsEnum(UserRole)` |
+| `@IsUUID()` | UUID format | `id: string` |
+| `@IsArray()` | Kiểm tra mảng | `tags: string[]` |
+
+---
+
+## 🚀 Application Bootstrap
+
+### 📦 **AppModule & Startup**
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  // 🏗️ Tạo ứng dụng NestJS
+  const app = await NestFactory.create(AppModule);
+  
+  // ⚙️ Global Validation Configuration
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // tự động loại bỏ các thuộc tính không được định nghĩa trong DTO
-      forbidNonWhitelisted: true, // ném lỗi nếu có thuộc tính không được định nghĩa trong DTO
-      transform: true, // tự động chuyển đổi payload thành các instance của lớp DTO
-      // transformOptions: { enableImplicitConversion: true }, // cho phép chuyển đổi kiểu ngầm định
+      whitelist: true,           // 🗑️ Auto-remove unknown properties
+      forbidNonWhitelisted: true, // ❌ Throw error for unknown properties
+      transform: true,           // 🔄 Transform payload to DTO instances
       exceptionFactory: (validatorErrors) => {
-        return new UnprocessableEntityException(
-          validatorErrors.map((err) => ({
-            field: err.property,
-            errors: Object.values(err.constraints as any).join(', '),
-          })),
-        )
+        // 🎨 Custom validation error format
+        const errors = validatorErrors.map(err => ({
+          field: err.property,
+          errors: Object.values(err.constraints).join(', '),
+        }));
+        
+        return new UnprocessableEntityException({
+          message: 'Validation failed',
+          errors,
+          timestamp: new Date().toISOString(),
+        });
       },
     }),
-  )
-  await app.listen(process.env.PORT ?? 3000)
+  );
+
+  // 🌐 Start listening on port
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  
+  console.log(`🚀 Application running on: http://localhost:${port}`);
 }
-bootstrap()
+
+// 🎯 Bootstrap application
+bootstrap().catch(console.error);
+```
+
+---
+
+## 📝 Summary Table
+
+| Concept | Purpose | Key Features |
+|---------|---------|--------------|
+| **DTO** | Data transfer between layers | Encapsulation, Type safety |
+| **Service** | Business logic separation | Reusable, Maintainable |
+| **Prisma** | Database ORM | Type-safe, Modern |
+| **Hashing** | Password protection | One-way, Secure |
+| **Validation** | Input data validation | Rules, Custom messages |
+| **Serialization** | Data transformation | Hide sensitive data, Format |
+
+---
+
+## 🎨 Visual Flow
+
+```mermaid
+graph TB
+    A[Client Request] --> B[ValidationPipe]
+    B --> C[DTO Transformation]
+    C --> D[Service Logic]
+    D --> E[Database Prisma]
+    E --> F[Serialization]
+    F --> G[Client Response]
+    
+    B --> H[Validation Errors]
+    H --> I[Custom Exception]
+    I --> J[Error Response]
+```
+
+This Markdown document provides a comprehensive, visually appealing, and easy-to-understand guide to NestJS concepts with practical examples and clear explanations! 🎯
