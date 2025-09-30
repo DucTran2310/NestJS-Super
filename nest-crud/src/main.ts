@@ -1,5 +1,7 @@
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { LoggingInterceptor } from 'src/shared/interceptor/logging.interceptor'
+import { TransformInterceptor } from 'src/shared/interceptor/transform.interceptor'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -20,6 +22,10 @@ async function bootstrap() {
       },
     }),
   )
+
+  app.useGlobalInterceptors(new LoggingInterceptor())
+  app.useGlobalInterceptors(new TransformInterceptor())
   await app.listen(process.env.PORT ?? 3000)
 }
+
 bootstrap()
