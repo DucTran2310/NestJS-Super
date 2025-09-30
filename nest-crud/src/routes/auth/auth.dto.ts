@@ -48,3 +48,12 @@ export class RegisterResDTO extends SuccessResDTO {
     Object.assign(this, partial) // gán các thuộc tính từ partial vào instance hiện tại
   }
 }
+
+export class LoginResDTO {
+  accessToken: string
+  refreshToken: string
+
+  constructor(partial: Partial<LoginResDTO>) {
+    Object.assign(this, partial) // gán các thuộc tính từ partial vào instance hiện tại
+  }
+}
