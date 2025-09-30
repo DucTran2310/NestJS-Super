@@ -36,6 +36,7 @@ export default tseslint.config(
       '@typescript-eslint.io/rules/no-unsafe-member-access': 'off',
       '@typescript-eslint.io/rules/no-unsafe-member-access': 'off',
       '@typescript-eslint.io/rules/await-thenable': 'off',
+      '@typescript-eslint.io/rules/no-unsafe-member-access': 'off',
       'prettier/prettier': 'off',
     },
   },
