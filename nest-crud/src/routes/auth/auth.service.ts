@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-  UnprocessableEntityException,
-} from '@nestjs/common'
-import { Prisma } from 'generated/prisma'
+import { ConflictException, Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common'
 import { LoginBodyDTO } from 'src/routes/auth/auth.dto'
+import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { TokenService } from 'src/shared/services/token.service'
 import { PrismaService } from '../../shared/services/prisma.service'
@@ -33,15 +27,8 @@ export class AuthService {
       })
       return user
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException('Email already exists')
-        }
-      }
-
-      // Nếu đã là NestJS exception thì re-throw luôn
-      if (error instanceof BadRequestException || error instanceof ConflictException) {
-        throw error
+      if (isUniqueConstraintPrismaError(error)) {
+        throw new ConflictException('Email already exists')
       }
 
       throw error
@@ -109,7 +96,7 @@ export class AuthService {
     } catch (error) {
       // Trường hợp đã refreshToken rồi, tbao cho user biêt
       // refresh của họ đã bị đánh cắp, hoặc họ đã đăng xuất khỏi tất cả các thiết bị
-      if (error instanceof Prisma.PrismaClientKnownRequestError || error.code === 'P2025') {
+      if (isNotFoundPrismaError(error)) {
         throw new UnauthorizedException('Refresh token has been revoked')
       }
 
