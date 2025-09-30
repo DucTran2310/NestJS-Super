@@ -23,16 +23,6 @@ export class AuthService {
 
   async register(body: any) {
     try {
-      // Kiểm tra password và confirmPassword
-      if (body.password !== body.confirmPassword) {
-        throw new BadRequestException('Password and confirm password do not match')
-      }
-
-      // Kiểm tra độ dài password (tuỳ chọn)
-      if (body.password.length < 6) {
-        throw new BadRequestException('Password must be at least 6 characters long')
-      }
-
       const hashedPassword = await this.hashingService.hash(body.password)
       const user = await this.prismaService.user.create({
         data: {
