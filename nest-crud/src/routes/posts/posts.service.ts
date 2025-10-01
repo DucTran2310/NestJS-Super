@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/shared/services/prisma.service'
 
@@ -8,8 +9,14 @@ export class PostsService {
     return this.prismaService.post.findMany()
   }
 
-  createPost(body: any) {
-    return body
+  createPost(userId: number, body: any) {
+    return this.prismaService.post.create({
+      data: {
+        title: body.title,
+        content: body.content,
+        authorId: userId,
+      },
+    })
   }
 
   getPost(id: string) {
