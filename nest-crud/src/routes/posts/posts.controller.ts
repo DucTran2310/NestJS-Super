@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
+import { GetPostItemDTO } from 'src/routes/posts/posts.dto'
 import { PostsService } from 'src/routes/posts/posts.service'
 import { AUTH_TYPES, CONDITIONS_GUARD } from 'src/shared/constants/auth.constant'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
@@ -13,8 +14,8 @@ export class PostsController {
 
   @Auth([AUTH_TYPES.Bearer, AUTH_TYPES.ApiKey], { condition: CONDITIONS_GUARD.AND })
   @Get()
-  getPosts() {
-    return this.postService.getPosts()
+  getPosts(@ActiveUser('userId') userId: number) {
+    return this.postService.getPosts(userId).then((posts) => posts.map((post) => new GetPostItemDTO(post)))
   }
 
   @Post()
