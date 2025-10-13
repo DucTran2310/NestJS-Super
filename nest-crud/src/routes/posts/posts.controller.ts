@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
-import { GetPostItemDTO } from 'src/routes/posts/posts.dto'
+import { CreatePostBodyDTO, GetPostItemDTO, UpdatePostBodyDTO } from 'src/routes/posts/posts.dto'
 import { PostsService } from 'src/routes/posts/posts.service'
 import { AUTH_TYPES, CONDITIONS_GUARD } from 'src/shared/constants/auth.constant'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
@@ -20,22 +20,33 @@ export class PostsController {
 
   @Post()
   @Auth([AUTH_TYPES.Bearer])
-  createPost(@Body() body: any, @ActiveUser('userId') userId: number) {
-    return this.postService.createPost(userId, body)
+  async createPost(@Body() body: CreatePostBodyDTO, @ActiveUser('userId') userId: number) {
+    return new GetPostItemDTO(await this.postService.createPost(userId, body))
   }
 
   @Get(':id')
-  getPost(@Param('id') id: string) {
-    return this.postService.getPost(id)
+  async getPost(@Param('id') id: string) {
+    return new GetPostItemDTO(await this.postService.getPost(Number(id)))
   }
 
+  @Auth([AUTH_TYPES.Bearer])
   @Put(':id')
-  updatePost(@Param('id') id: string, @Body() body: any) {
-    return this.postService.updatePost(id, body)
+  async updatePost(@Body() body: UpdatePostBodyDTO, @Param('id') id: string, @ActiveUser('userId') userId: number) {
+    return new GetPostItemDTO(
+      await this.postService.updatePost({
+        postId: Number(id),
+        userId,
+        body,
+      }),
+    )
   }
 
+  @Auth([AUTH_TYPES.Bearer])
   @Delete(':id')
-  deletePost(@Param('id') id: string) {
-    return this.postService.deletePost(id)
+  deletePost(@Param('id') id: string, @ActiveUser('userId') userId: number): Promise<boolean> {
+    return this.postService.deletePost({
+      postId: Number(id),
+      userId,
+    })
   }
 }
