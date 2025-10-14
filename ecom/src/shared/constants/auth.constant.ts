@@ -1,16 +1,30 @@
 export const REQUEST_USER_KEY = 'user'
 
-export const AUTH_TYPES = {
+export const AuthType = {
   Bearer: 'Bearer',
   None: 'None',
-  ApiKey: 'ApiKey',
+  APIKey: 'ApiKey',
 } as const
 
-export type AUTH_TYPES_TYPE = (typeof AUTH_TYPES)[keyof typeof AUTH_TYPES]
+export type AuthTypeType = (typeof AuthType)[keyof typeof AuthType]
 
-export const CONDITIONS_GUARD = {
-  AND: 'and',
-  OR: 'or',
+export const ConditionGuard = {
+  And: 'and',
+  Or: 'or',
 } as const
 
-export type CONDITIONS_GUARD_TYPE = (typeof CONDITIONS_GUARD)[keyof typeof CONDITIONS_GUARD]
+export type ConditionGuardType = (typeof ConditionGuard)[keyof typeof ConditionGuard]
+
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BLOCKED: 'BLOCKED',
+} as const
+
+export const TypeOfVerificationCode = {
+  REGISTER: 'REGISTER',
+  FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+} as const
+
+export type TypeOfVerificationCodeType = (typeof TypeOfVerificationCode)[keyof typeof TypeOfVerificationCode]
+export const REQUEST_ROLE_PERMISSIONS = 'role_permissions'
