@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common'
 
 import { ZodSerializerDto } from 'nestjs-zod'
+import { RegisterBodyDTO, RegisterResDTO } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
-import { RegisterBodyDTO, RegisterResDTO } from './auth.dto'
 
 @Controller('auth')
 export class AuthController {

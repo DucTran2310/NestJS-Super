@@ -1,19 +1,19 @@
 export const REQUEST_USER_KEY = 'user'
 
-export const AuthType = {
+export const AUTH_TYPES = {
   Bearer: 'Bearer',
   None: 'None',
-  APIKey: 'ApiKey',
+  ApiKey: 'ApiKey',
 } as const
 
-export type AuthTypeType = (typeof AuthType)[keyof typeof AuthType]
+export type AUTH_TYPES_TYPE = (typeof AUTH_TYPES)[keyof typeof AUTH_TYPES]
 
-export const ConditionGuard = {
-  And: 'and',
-  Or: 'or',
+export const CONDITIONS_GUARD = {
+  AND: 'and',
+  OR: 'or',
 } as const
 
-export type ConditionGuardType = (typeof ConditionGuard)[keyof typeof ConditionGuard]
+export type CONDITIONS_GUARD_TYPE = (typeof CONDITIONS_GUARD)[keyof typeof CONDITIONS_GUARD]
 
 export const UserStatus = {
   ACTIVE: 'ACTIVE',
