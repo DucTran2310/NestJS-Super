@@ -1,5 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common'
-import { RegisterBodyType } from 'src/routes/auth/auth.model'
+import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
 import { RoleService } from 'src/routes/auth/role.service'
 import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
@@ -42,5 +42,9 @@ export class AuthService {
 
       throw error
     }
+  }
+
+  sendOTP(body: SendOTPBodyType) {
+    this.logger.debug(`SEND OTP: ${JSON.stringify(body)}`)
   }
 }
