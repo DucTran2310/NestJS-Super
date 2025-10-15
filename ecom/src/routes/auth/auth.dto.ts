@@ -1,26 +1,5 @@
 import { createZodDto } from 'nestjs-zod'
-import { UserSchema } from 'src/shared/models/shared-user.model'
-
-import { z } from 'zod'
-
-export const RegisterBodySchema = z
-  .object({
-    email: z.string().email(),
-    password: z.string().min(6).max(100),
-    name: z.string().min(2).max(100),
-    confirmPassword: z.string().min(6).max(100),
-    phoneNumber: z.string().min(9).max(15),
-  })
-  .strict()
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Password and confirm password must match',
-        path: ['confirmPassword'],
-      })
-    }
-  })
+import { RegisterBodySchema, RegisterResSchema } from 'src/routes/auth/auth.model'
 
 export class RegisterBodyDTO extends createZodDto(RegisterBodySchema) {}
-export class RegisterResDTO extends createZodDto(UserSchema) {}
+export class RegisterResDTO extends createZodDto(RegisterResSchema) {}
