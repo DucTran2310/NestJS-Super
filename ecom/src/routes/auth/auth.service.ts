@@ -26,6 +26,30 @@ export class AuthService {
 
     try {
       // this.logger.debug('Lấy client role ID...')
+      const verificationCode = await this.authRepository.findUniqueVerificationCode({
+        email: body.email,
+        code: body.code,
+        type: TypeOfVerificationCode.REGISTER,
+      })
+
+      if (!verificationCode) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Mã OTP không hợp lệ.',
+            path: 'code',
+          },
+        ])
+      }
+
+      if (verificationCode.expiresAt < new Date()) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Mã OTP đã hết hạn',
+            path: 'code',
+          },
+        ])
+      }
+
       const clientRoleId = await this.roleService.getClientRoleId()
 
       // this.logger.debug('Hash password...')
