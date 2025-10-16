@@ -1,9 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+import { Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
 import { RoleService } from 'src/routes/auth/role.service'
-import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
+import envConfig from 'src/shared/config'
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
+import { generateOTP, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { FileLogger } from 'src/shared/logger/custom.logger'
+import { SharedUserRepository } from 'src/shared/repositories/shared-user.repo'
 import { HashingService } from 'src/shared/services/hashing.service'
 
 @Injectable()
@@ -14,6 +18,7 @@ export class AuthService {
     private readonly hashingService: HashingService,
     private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
+    private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
   async register(body: RegisterBodyType) {
@@ -37,14 +42,50 @@ export class AuthService {
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {
         this.logger.warn(`Email ${body.email} đã tồn tại`)
-        throw new ConflictException(`Email ${body.email} đã tồn tại`)
+        throw new UnprocessableEntityException([
+          {
+            message: `Email ${body.email} đã tồn tại`,
+            path: 'email',
+          },
+        ])
       }
 
       throw error
     }
   }
 
-  sendOTP(body: SendOTPBodyType) {
-    this.logger.debug(`SEND OTP: ${JSON.stringify(body)}`)
+  async sendOTP(body: SendOTPBodyType) {
+    // 1. Kiểm tra email
+    const user = await this.sharedUserRepository.findUnique({
+      email: body.email,
+    })
+
+    if (body.type === TypeOfVerificationCode.REGISTER && user) {
+      throw new UnprocessableEntityException([
+        {
+          message: `Email ${body.email} đã tồn tại`,
+          path: 'email',
+        },
+      ])
+    }
+
+    // 2. Tạo mã OTP
+    const code = generateOTP()
+
+    // THÊM AWAIT và kiểm tra OTP_EXPIRES_IN
+    const expiresInMs = parseInt(envConfig.OTP_EXPIRES_IN)
+    const expiresAt = new Date(Date.now() + expiresInMs)
+
+    const verificationCode = await this.authRepository.createVerificationCode({
+      email: body.email,
+      code,
+      type: body.type,
+      expiresAt: expiresAt,
+    })
+
+    // 3. Gửi mã OTP (thực tế sẽ gọi service email)
+    // await this.emailService.sendOTP(body.email, code)
+
+    return verificationCode
   }
 }
