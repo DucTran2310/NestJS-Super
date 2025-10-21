@@ -8,6 +8,7 @@ import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 import { generateOTP, isUniqueConstraintPrismaError } from 'src/shared/helpers'
 import { FileLogger } from 'src/shared/logger/custom.logger'
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repo'
+import { EmailService } from 'src/shared/services/email.service'
 import { HashingService } from 'src/shared/services/hashing.service'
 
 @Injectable()
@@ -19,6 +20,7 @@ export class AuthService {
     private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
     private readonly sharedUserRepository: SharedUserRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(body: RegisterBodyType) {
@@ -108,7 +110,19 @@ export class AuthService {
     })
 
     // 3. Gửi mã OTP (thực tế sẽ gọi service email)
-    // await this.emailService.sendOTP(body.email, code)
+    const { error } = await this.emailService.sendOTP({
+      email: body.email,
+      code,
+    })
+
+    if (error) {
+      throw new UnprocessableEntityException([
+        {
+          message: 'Gửi mã OTP thất bại',
+          path: 'code',
+        },
+      ])
+    }
 
     return verificationCode
   }
