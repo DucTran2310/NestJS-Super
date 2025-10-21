@@ -3,6 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import { Resend } from 'resend'
 import envConfig from 'src/shared/config'
+import { OTPEmail } from 'emails/otp'
+import { render } from '@react-email/components'
 
 @Injectable()
 export class EmailService {
@@ -18,14 +20,18 @@ export class EmailService {
 
     // Ở đây có thể sử dụng hàm render để mà tạo ra cái html cho email
     const otpTemplate = fs.readFileSync(path.resolve('src/shared/email-templates/otp.html'), { encoding: 'utf-8' })
+    const html = await render(OTPEmail({ OTPCode: payload.code, title: "Mã OTP" }), {
+      pretty: true,
+    })
 
     return this.resend.emails.send({
       from: 'Ecommerce <onboarding@resend.dev>',
       to: ['18520021@gm.uit.edu.vn'],
       subject: 'Mã OTP',
       // html: `<strong>${payload.code}</strong>`,
-      // react: <OTPEmail otpCode={payload.code} title={subject} />,
-      html: otpTemplate.replaceAll('{{code}}', payload.code),
+      // react: OTPEmail({ OTPCode: payload.code, title: 'Mã OTP' }),
+      // html: otpTemplate.replaceAll('{{code}}', payload.code),
+      html
     })
   }
 }
