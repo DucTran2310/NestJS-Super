@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common'
+import fs from 'fs'
+import path from 'path'
 import { Resend } from 'resend'
 import envConfig from 'src/shared/config'
 
@@ -15,13 +17,15 @@ export class EmailService {
     // Muốn mà lấy được cái data và error khi mà gửi đi thì ở bên đây cần phải return về cái object mail như này
 
     // Ở đây có thể sử dụng hàm render để mà tạo ra cái html cho email
+    const otpTemplate = fs.readFileSync(path.resolve('src/shared/email-templates/otp.html'), { encoding: 'utf-8' })
+
     return this.resend.emails.send({
       from: 'Ecommerce <onboarding@resend.dev>',
       to: ['18520021@gm.uit.edu.vn'],
       subject: 'Mã OTP',
-      html: `<strong>${payload.code}</strong>`,
+      // html: `<strong>${payload.code}</strong>`,
       // react: <OTPEmail otpCode={payload.code} title={subject} />,
-      // html: otpTemplate.replaceAll('{{code}}', payload.code).replaceAll('{{subject}}', subject),
+      html: otpTemplate.replaceAll('{{code}}', payload.code),
     })
   }
 }
